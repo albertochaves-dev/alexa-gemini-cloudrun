@@ -31,7 +31,25 @@ gcloud iam service-accounts describe "$SA_EMAIL" >/dev/null 2>&1 \
   || gcloud iam service-accounts create "$SA_NAME" \
        --display-name="GitHub Actions deployer"
 
-echo "==> Granting deploy roles"
+# A freshly created service account is not immediately usable as an IAM member
+# (eventual consistency), so binding roles can fail with "does not exist".
+# Retry each binding until the account has propagated.
+grant_role() {
+  local role="$1"
+  local i
+  for i in $(seq 1 8); do
+    if gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+         --member="serviceAccount:${SA_EMAIL}" \
+         --role="$role" --condition=None >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 5
+  done
+  echo "   ERROR: could not grant $role" >&2
+  return 1
+}
+
+echo "==> Granting deploy roles (with propagation retries)"
 for role in \
   roles/run.admin \
   roles/artifactregistry.writer \
@@ -39,9 +57,8 @@ for role in \
   roles/storage.admin \
   roles/iam.serviceAccountUser \
   roles/logging.viewer; do
-  gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-    --member="serviceAccount:${SA_EMAIL}" \
-    --role="$role" --condition=None >/dev/null
+  echo "   - $role"
+  grant_role "$role"
 done
 
 echo "==> Creating Workload Identity pool/provider (if needed)"
