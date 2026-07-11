@@ -46,8 +46,15 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Build image with Cloud Build
-        run: gcloud builds submit --tag "$IMAGE" --project "${{ vars.GCP_PROJECT_ID }}" .
+      # The GitHub runner is amd64, so a plain docker build produces the right
+      # architecture for Cloud Run — no Cloud Build needed in CI.
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
+
+      - name: Build and push image
+        run: |
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
 
       - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
