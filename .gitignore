@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Environment / secrets
+.env
+*.env
+!.env.example
+
+# Google Cloud / service account keys
+*-key.json
+gha-creds-*.json
+service-account*.json
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/

@@ -1,0 +1,48 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "momoru",
+      "types": [],
+      "intents": [
+        { "name": "AMAZON.CancelIntent", "samples": [] },
+        { "name": "AMAZON.HelpIntent", "samples": [] },
+        { "name": "AMAZON.StopIntent", "samples": [] },
+        { "name": "AMAZON.FallbackIntent", "samples": [] },
+        { "name": "AMAZON.NavigateHomeIntent", "samples": [] },
+        {
+          "name": "PreguntarGeminiIntent",
+          "slots": [
+            { "name": "pregunta", "type": "AMAZON.SearchQuery" }
+          ],
+          "samples": [
+            "momoru {pregunta}",
+            "momoru dime {pregunta}",
+            "oye momoru {pregunta}",
+            "dime {pregunta}",
+            "dime una cosa {pregunta}",
+            "oye dime {pregunta}",
+            "cuéntame {pregunta}",
+            "cuéntame sobre {pregunta}",
+            "pregunta {pregunta}",
+            "pregúntale {pregunta}",
+            "quiero saber {pregunta}",
+            "me gustaría saber {pregunta}",
+            "necesito saber {pregunta}",
+            "explícame {pregunta}",
+            "explica {pregunta}",
+            "respóndeme {pregunta}",
+            "responde {pregunta}",
+            "oye {pregunta}",
+            "sabes {pregunta}",
+            "sabes si {pregunta}",
+            "a ver {pregunta}",
+            "ayúdame con {pregunta}",
+            "tengo una pregunta {pregunta}",
+            "una pregunta {pregunta}",
+            "consulta {pregunta}"
+          ]
+        }
+      ]
+    }
+  }
+}

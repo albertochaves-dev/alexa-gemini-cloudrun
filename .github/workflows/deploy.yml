@@ -1,0 +1,66 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: pytest -q
+
+  deploy:
+    name: Build & deploy to Cloud Run
+    needs: test
+    runs-on: ubuntu-latest
+    # Required for Workload Identity Federation (keyless auth)
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/alexa-gemini/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build image with Cloud Build
+        run: gcloud builds submit --tag "$IMAGE" --project "${{ vars.GCP_PROJECT_ID }}" .
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ vars.CLOUD_RUN_SERVICE }}
+          region: ${{ vars.GCP_REGION }}
+          image: ${{ env.IMAGE }}
+          flags: --allow-unauthenticated
+          env_vars: |
+            GEMINI_MODEL=gemini-2.5-flash
+            VERIFY_ALEXA_SIGNATURE=true
+            RATE_LIMIT_MAX_REQUESTS=60
+            RATE_LIMIT_WINDOW_SECONDS=60
+          # Mounted from Google Secret Manager at runtime (never stored in the repo)
+          secrets: |
+            GEMINI_API_KEY=gemini-api-key:latest

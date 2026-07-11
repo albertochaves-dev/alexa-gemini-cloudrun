@@ -1,0 +1,25 @@
+# Keep the build context and image lean
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+.git/
+.github/
+docs/
+scripts/
+tests/
+public/
+firebase.json
+.firebaserc
+
+.env
+*.env
+!.env.example
+
+.DS_Store
+*.md
+!README.md
