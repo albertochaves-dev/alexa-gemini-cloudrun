@@ -16,26 +16,7 @@ and returns a voice-ready answer — all on a **zero-cost** serverless footprint
 
 ## Architecture
 
-```
-┌──────────┐   voice    ┌─────────────┐   HTTPS    ┌────────────────────┐
-│ Echo Dot │ ─────────► │ Alexa Cloud │ ─────────► │ Custom domain      │
-└──────────┘            │  (NLU/ASR)  │  (signed)  │ momoru.dedyn.io     │
-      ▲                 └─────────────┘            │  └ Firebase Hosting │
-      │ speech                                     │      (TLS proxy)    │
-      │                                            └─────────┬──────────┘
-      │                                                      │ rewrite
-      │                                            ┌─────────▼──────────┐
-      │                                            │ Cloud Run          │
-      │                                            │  FastAPI backend   │
-      │                                            │  • signature check │
-      │                                            │  • rate limiting   │
-      │                                            │  • Gemini client   │
-      │                                            └─────────┬──────────┘
-      │                                                      │ REST
-      │            voice answer                     ┌────────▼──────────┐
-      └─────────────────────────────────────────── │ Google Gemini API │
-                                                    └───────────────────┘
-```
+![Architecture diagram](docs/architecture.svg)
 
 Why the Firebase Hosting hop exists is the most interesting part of this
 project — see [The certificate problem](#the-certificate-problem-a-real-world-gotcha).

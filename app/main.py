@@ -5,6 +5,7 @@ from starlette.responses import JSONResponse
 
 from app.alexa import build_response, parse_intent_name, parse_request_type, parse_slot_value
 from app.config import (
+    GEMINI_VOICE,
     RATE_LIMIT_MAX_REQUESTS,
     RATE_LIMIT_WINDOW_SECONDS,
     VERIFY_ALEXA_SIGNATURE,
@@ -98,7 +99,12 @@ async def alexa_endpoint(request: Request) -> dict:
             except Exception:
                 logger.exception("gemini_error")
                 return build_response(ERROR_TEXT, end_session=False, reprompt_text="¿Algo más?")
-            return build_response(answer, end_session=False, reprompt_text="¿Algo más?")
+            return build_response(
+                answer,
+                end_session=False,
+                reprompt_text="¿Algo más?",
+                voice=GEMINI_VOICE or None,
+            )
 
         return build_response(FALLBACK_TEXT, end_session=False, reprompt_text=FALLBACK_TEXT)
 
