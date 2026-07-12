@@ -14,8 +14,8 @@ jobs:
     name: Lint & test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -34,17 +34,17 @@ jobs:
     env:
       IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/alexa-gemini/${{ vars.CLOUD_RUN_SERVICE }}:${{ github.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
           service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
       - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       # The GitHub runner is amd64, so a plain docker build produces the right
       # architecture for Cloud Run — no Cloud Build needed in CI.
@@ -57,7 +57,7 @@ jobs:
           docker push "$IMAGE"
 
       - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
+        uses: google-github-actions/deploy-cloudrun@v3
         with:
           service: ${{ vars.CLOUD_RUN_SERVICE }}
           region: ${{ vars.GCP_REGION }}
@@ -65,6 +65,7 @@ jobs:
           flags: --allow-unauthenticated
           env_vars: |
             GEMINI_MODEL=gemini-2.5-flash
+            GEMINI_VOICE=Enrique
             VERIFY_ALEXA_SIGNATURE=true
             RATE_LIMIT_MAX_REQUESTS=60
             RATE_LIMIT_WINDOW_SECONDS=60

@@ -31,7 +31,10 @@ def test_gemini_intent(monkeypatch):
     }
     response = client.post("/alexa", json=payload)
     assert response.status_code == 200
-    assert response.json()["response"]["outputSpeech"]["text"] == "respuesta de prueba"
+    speech = response.json()["response"]["outputSpeech"]
+    # Gemini answers are spoken with a distinct SSML voice
+    assert speech["type"] == "SSML"
+    assert "respuesta de prueba" in speech["ssml"]
 
 
 def test_gemini_intent_missing_slot():

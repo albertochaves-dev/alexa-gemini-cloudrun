@@ -13,6 +13,15 @@ def test_build_response_with_reprompt():
     assert resp["response"]["reprompt"]["outputSpeech"]["text"] == "repite"
 
 
+def test_build_response_with_voice_uses_ssml():
+    resp = build_response("París & Roma", voice="Enrique", reprompt_text="¿algo más?")
+    speech = resp["response"]["outputSpeech"]
+    assert speech["type"] == "SSML"
+    assert speech["ssml"] == '<speak><voice name="Enrique">París &amp; Roma</voice></speak>'
+    # The reprompt keeps Alexa's default voice (plain text)
+    assert resp["response"]["reprompt"]["outputSpeech"]["type"] == "PlainText"
+
+
 def test_parse_request_type():
     payload = {"request": {"type": "LaunchRequest"}}
     assert parse_request_type(payload) == "LaunchRequest"
